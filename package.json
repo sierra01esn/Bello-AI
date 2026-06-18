@@ -1,0 +1,13 @@
+{
+  "name": "bello-ai",
+  "version": "1.0.0",
+  "description": "Bello AI – Fenstermacher24 Google Review Auto-Responder",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "@vercel/kv": "^2.0.0",
+    "googleapis": "^140.0.0"
+  }
+}

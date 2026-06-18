@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bello AI — Fenstermacher24</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 2.5rem;
+    }
+    .logo {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      background: #C8860A;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header p { font-size: 13px; color: #666; margin-top: 2px; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 2rem;
+    }
+    .stat {
+      background: #1a1a1a;
+      border: 0.5px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+    .stat-label { font-size: 12px; color: #666; margin-bottom: 6px; }
+    .stat-val { font-size: 28px; font-weight: 600; color: #f0f0f0; }
+    .stat-val.accent { color: #C8860A; }
+    .section-title {
+      font-size: 13px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .log-item {
+      background: #1a1a1a;
+      border: 0.5px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+    }
+    .log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .reviewer { font-weight: 500; font-size: 14px; }
+    .stars { color: #C8860A; font-size: 13px; }
+    .date { font-size: 12px; color: #555; }
+    .review-text {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 8px;
+      line-height: 1.5;
+      font-style: italic;
+    }
+    .reply-label {
+      font-size: 11px;
+      color: #C8860A;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .reply-text {
+      font-size: 13px;
+      color: #c0c0c0;
+      line-height: 1.6;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #1f2e18;
+      color: #7ec85b;
+      border: 0.5px solid #3a5a28;
+    }
+    .empty { color: #555; font-size: 14px; padding: 2rem 0; text-align: center; }
+    .last-run { font-size: 12px; color: #555; margin-top: 2rem; text-align: center; }
+    .cron-note {
+      background: #1a1a1a;
+      border: 0.5px solid #2a2a2a;
+      border-left: 2px solid #C8860A;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .cron-note strong { color: #f0f0f0; }
+    .refresh-btn {
+      background: transparent;
+      border: 0.5px solid #2a2a2a;
+      color: #888;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      margin-bottom: 2rem;
+    }
+    .refresh-btn:hover { background: #1a1a1a; color: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🪟</div>
+    <div>
+      <h1>Bello AI</h1>
+      <p>Fenstermacher24 · Google Review Auto-Responder</p>
+    </div>
+  </div>
+
+  <div class="cron-note">
+    <strong>Running automatically.</strong> Bello AI checks for new Google reviews every morning at 9am via Vercel Cron. New reviews without a reply get a warm, friendly response posted automatically — completely free.
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Total replies sent</div>
+      <div class="stat-val accent" id="totalReplies">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Recent replies (last 20)</div>
+      <div class="stat-val" id="recentCount">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Status</div>
+      <div class="stat-val" style="font-size:16px;padding-top:6px" id="status">—</div>
+    </div>
+  </div>
+
+  <button class="refresh-btn" onclick="load()">↻ Refresh</button>
+
+  <p class="section-title">Recent replies</p>
+  <div id="log"></div>
+  <p class="last-run" id="lastRun"></p>
+
+  <script>
+    function stars(n) {
+      return '★'.repeat(n) + '☆'.repeat(5 - n)
+    }
+
+    function timeAgo(iso) {
+      if (!iso) return ''
+      const diff = Date.now() - new Date(iso).getTime()
+      const mins = Math.floor(diff / 60000)
+      if (mins < 60) return `${mins}m ago`
+      const hrs = Math.floor(mins / 60)
+      if (hrs < 24) return `${hrs}h ago`
+      return `${Math.floor(hrs / 24)}d ago`
+    }
+
+    async function load() {
+      try {
+        const res = await fetch('/api/reviews/stats')
+        const data = await res.json()
+
+        document.getElementById('totalReplies').textContent = data.totalReplies || 0
+        document.getElementById('recentCount').textContent = data.recentReplies?.length || 0
+        document.getElementById('status').innerHTML = '<span class="badge">● Active</span>'
+
+        if (data.lastRun) {
+          document.getElementById('lastRun').textContent =
+            `Last cron run: ${new Date(data.lastRun).toLocaleString('de-DE')} (${timeAgo(data.lastRun)})`
+        }
+
+        const log = document.getElementById('log')
+        if (!data.recentReplies?.length) {
+          log.innerHTML = '<p class="empty">No replies sent yet — Bello AI is watching for new reviews.</p>'
+          return
+        }
+
+        log.innerHTML = data.recentReplies.map(r => `
+          <div class="log-item">
+            <div class="log-header">
+              <div>
+                <span class="reviewer">${r.reviewerName || 'Anonymous'}</span>
+                <span class="stars" style="margin-left:8px">${stars(r.rating || 0)}</span>
+              </div>
+              <span class="date">${timeAgo(r.repliedAt)}</span>
+            </div>
+            <p class="review-text">"${r.reviewText || '—'}"</p>
+            <p class="reply-label">Bello AI replied</p>
+            <p class="reply-text">${r.replyText || ''}</p>
+          </div>
+        `).join('')
+      } catch (e) {
+        document.getElementById('log').innerHTML =
+          '<p class="empty">Could not load data. Is the API running?</p>'
+      }
+    }
+
+    load()
+  </script>
+</body>
+</html>
