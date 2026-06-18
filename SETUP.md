@@ -4,7 +4,7 @@
 ---
 
 ## What this does
-Vercel Cron job runs every hour → fetches new Google Business Profile reviews → generates a warm friendly reply via Claude AI → posts it back to Google automatically.
+Vercel Cron job runs every day once → fetches new Google Business Profile reviews → generates a warm friendly reply via Claude AI → posts it back to Google automatically.
 
 ---
 
